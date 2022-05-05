@@ -23,40 +23,44 @@ module.exports = {
 					const imageExtension = imageUrl.replace(/.*\.([^.]{3,4})$/g, '$1');
 					const imageDownload = spawn('wget', ['-O', `./dream/inspiration.${imageExtension}`, imageUrl]);
 
-					//interaction.followUp(`You've entered: ${messages.first().content}`);
-					const channel = interaction.channel;
-					const userName = interaction.member.displayName;
-					channel.threads.create({
-						name: `${userName}'s nightmare`,
-						autoArchiveDuration: 1440,	// 1 day
-						reason: 'Showing progress dreaming up a nightmare'
-					}).then(threadChannel => {
-						const nightmareProcess = spawn('./darknet', ['nightmare', 'cfg/vgg-conv.cfg', 'vgg-conv.weights', 'data/scream.jpg', '10']);
+					imageDownload.on('close', code => {
 
-						nightmareProcess.stdout.on('data', data => {
-							threadChannel.send(data)
-								.then(message => console.log(`Sent message: ${message.content}`))
-								.catch(console.error);
-						});
+						//interaction.followUp(`You've entered: ${messages.first().content}`);
+						const channel = interaction.channel;
+						const userName = interaction.member.displayName;
+						channel.threads.create({
+							name: `${userName}'s nightmare`,
+							autoArchiveDuration: 1440,	// 1 day
+							reason: 'Showing progress dreaming up a nightmare'
+						}).then(threadChannel => {
+							const nightmareProcess = spawn('./darknet/darknet', ['nightmare', 'darknet/cfg/vgg-conv.cfg', 'darknet/vgg-conv.weights', `dream/${imageExtension}`, '10']);
 
-						nightmareProcess.stderr.on('data', data => {
-							console.log(`stderr: ${data}`);
-							threadChannel.send(data)
-								.then(message => console.log(`Sent error message: ${message.content}`))
-								.catch(console.error);
-						});
+							nightmareProcess.stdout.on('data', data => {
+								threadChannel.send(data)
+									.then(message => console.log(`Sent message: ${message.content}`))
+									.catch(console.error);
+							});
 
-						nightmareProcess.on('error', (error) => {
-							console.error(`error: ${error.message}`);
-						});
+							nightmareProcess.stderr.on('data', data => {
+								console.log(`stderr: ${data}`);
+								threadChannel.send(data)
+									.then(message => console.log(`Sent error message: ${message.content}`))
+									.catch(console.error);
+							});
 
-						nightmareProcess.on('close', (code) => {
-							threadChannel.send('Good morning')
-								.then(message => console.log(`Sent message: ${message.content}`))
-								.catch(console.error);
-						});
+							nightmareProcess.on('error', (error) => {
+								console.error(`error: ${error.message}`);
+							});
+
+							nightmareProcess.on('close', (code) => {
+								threadChannel.send('Good morning')
+									.then(message => console.log(`Sent message: ${message.content}`))
+									.catch(console.error);
+							});
+						})
+						.catch(console.error);
 					})
-					.catch(console.error)
+
 				})
 				.catch((e) => {
 					console.warn(e);
