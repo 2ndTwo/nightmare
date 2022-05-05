@@ -33,7 +33,7 @@ module.exports = {
 							autoArchiveDuration: 1440,	// 1 day
 							reason: 'Showing progress dreaming up a nightmare'
 						}).then(threadChannel => {
-							const nightmareProcess = spawn('./darknet/darknet', ['nightmare', 'darknet/cfg/vgg-conv.cfg', 'darknet/vgg-conv.weights', `dream/${imageExtension}`, '10']);
+							const nightmareProcess = spawn('./darknet/darknet', ['nightmare', 'darknet/cfg/vgg-conv.cfg', 'darknet/vgg-conv.weights', `dream.${imageExtension}`, '10']);
 
 							nightmareProcess.stdout.on('data', data => {
 								threadChannel.send(data)
