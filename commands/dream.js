@@ -36,7 +36,7 @@ module.exports = {
 							autoArchiveDuration: 1440,	// 1 day
 							reason: 'Showing progress dreaming up a nightmare'
 						}).then(threadChannel => {
-							const layers = 10;
+							const layers = 5;
 							const nightmareProcess = spawn('./darknet/darknet', ['nightmare', 'darknet/cfg/jnet-conv.cfg', 'darknet/jnet-conv.weights', `dream/inspiration.${imageExtension}`, layers.toString()]);
 
 							nightmareProcess.stdout.on('data', data => {
@@ -74,7 +74,7 @@ module.exports = {
 								const dimensions = sizeOf(nightmarePath);
 								const canvas = Canvas.createCanvas(dimensions.width, dimensions.height);
 								const context = canvas.getContext('2d');
-								const nightmare = await Canvas.loadImage('./dream/*');
+								const nightmare = await Canvas.loadImage(nightmarePath);
 								context.drawImage(nightmare, 0, 0, canvas.width, canvas.height);
 
 								const attachment = new MessageAttachment(canvas.toBuffer(), `nightmare.${imageExtension}`);
