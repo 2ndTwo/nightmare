@@ -33,19 +33,24 @@ module.exports = {
 							autoArchiveDuration: 1440,	// 1 day
 							reason: 'Showing progress dreaming up a nightmare'
 						}).then(threadChannel => {
-							const nightmareProcess = spawn('./darknet/darknet', ['nightmare', 'darknet/cfg/vgg-conv.cfg', 'darknet/vgg-conv.weights', `dream.${imageExtension}`, '10']);
+							const nightmareProcess = spawn('./darknet/darknet', ['nightmare', 'darknet/cfg/vgg-conv.cfg', 'darknet/vgg-conv.weights', `dream/inspiration.${imageExtension}`, '10']);
 
 							nightmareProcess.stdout.on('data', data => {
-								threadChannel.send(data)
-									.then(message => console.log(`Sent message: ${message.content}`))
-									.catch(console.error);
+								console.log(`stdout: ${data.trim()}`);
+								if (data.trim()) {
+									threadChannel.send(data.trim())
+										.then(message => console.log(`Sent message: ${message.content}`))
+										.catch(console.error);
+								}
 							});
 
 							nightmareProcess.stderr.on('data', data => {
-								console.log(`stderr: ${data}`);
-								threadChannel.send(data)
-									.then(message => console.log(`Sent error message: ${message.content}`))
-									.catch(console.error);
+								console.log(`stderr: ${data.trim()}`);
+								if (data.trim()) {
+									threadChannel.send(data.trim())
+										.then(message => console.log(`Sent error message: ${message.content}`))
+										.catch(console.error);
+								}
 							});
 
 							nightmareProcess.on('error', (error) => {
