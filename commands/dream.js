@@ -1,5 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { spawn } = require("child_process");
+const Canvas = require('canvas');
+const sizeOf = require('image-size');
+const { MessageAttachment } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -33,7 +36,7 @@ module.exports = {
 							autoArchiveDuration: 1440,	// 1 day
 							reason: 'Showing progress dreaming up a nightmare'
 						}).then(threadChannel => {
-							const nightmareProcess = spawn('./darknet/darknet', ['nightmare', 'darknet/cfg/vgg-conv.cfg', 'darknet/vgg-conv.weights', `dream/inspiration.${imageExtension}`, '10']);
+							const nightmareProcess = spawn('./darknet/darknet', ['nightmare', 'darknet/cfg/jnet-conv.cfg', 'darknet/jnet-conv.weights', `dream/inspiration.${imageExtension}`, '10']);
 
 							nightmareProcess.stdout.on('data', data => {
 								const dataStr = data.toString().trim();
@@ -59,10 +62,25 @@ module.exports = {
 								console.error(`error: ${error.message}`);
 							});
 
-							nightmareProcess.on('close', (code) => {
+							nightmareProcess.on('close', async (code) => {
 								threadChannel.send('Good morning')
 									.then(message => console.log(`Sent message: ${message.content}`))
 									.catch(console.error);
+
+								// Create the generated image as an attachment
+								// TODO: Add error checking, if file was not generated correctly
+								const nightmarePath = `./inspiration_jnet-conv_1_00000.${imageExtension}`;
+								const dimensions = sizeOf(nightmarePath);
+								const canvas = Canvas.createCanvas(dimensions.width, dimensions.height);
+								const context = canvas.getContext('2d');
+								const nightmare = await Canvas.loadImage('./dream/*');
+								context.drawImage(nightmare, 0, 0, canvas.width, canvas.height);
+
+								const attachment = new MessageAttachment(canvas.toBuffer(), `nightmare.${imageExtension}`);
+								threadChannel.send({
+									content: `<@${interaction.user.id}>`,
+									files: [attachment]
+								});
 							});
 						})
 						.catch(console.error);
