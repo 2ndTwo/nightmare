@@ -17,6 +17,8 @@ module.exports = {
 						return interaction.followUp('That is not something I can dream to.');
 					}
 
+					// Set status to "dreaming"
+
 					const imageUrl = attachments[0].url;
 					const imageExtension = imageUrl.replace(/.*\.([^.]{3,4})$/g, '$1');
 					const imageDownload = spawn('wget', ['-O', `./dream/inspiration.${imageExtension}`, imageUrl]);
@@ -24,17 +26,37 @@ module.exports = {
 					//interaction.followUp(`You've entered: ${messages.first().content}`);
 					const channel = interaction.channel;
 					const userName = interaction.member.displayName;
-					/*
 					channel.threads.create({
 						name: `${userName}'s nightmare`,
 						autoArchiveDuration: 1440,	// 1 day
 						reason: 'Showing progress dreaming up a nightmare'
 					}).then(threadChannel => {
-						//console.log(threadChannel);
-						//const nightmareProcess = spawn("./darknet nightmare cfg/vgg-conv.cfg vgg-conv.weights data/scream.jpg 10");
+						const nightmareProcess = spawn('./darknet', ['nightmare', 'cfg/vgg-conv.cfg', 'vgg-conv.weights', 'data/scream.jpg', '10']);
+
+						nightmareProcess.stdout.on('data', data => {
+							threadChannel.send(data)
+								.then(message => console.log(`Sent message: ${message.content}`))
+								.catch(console.error);
+						});
+
+						nightmareProcess.stderr.on('data', data => {
+							console.log(`stderr: ${data}`);
+							threadChannel.send(data)
+								.then(message => console.log(`Sent error message: ${message.content}`))
+								.catch(console.error);
+						});
+
+						nightmareProcess.on('error', (error) => {
+							console.error(`error: ${error.message}`);
+						});
+
+						nightmareProcess.on('close', (code) => {
+							threadChannel.send('Good morning')
+								.then(message => console.log(`Sent message: ${message.content}`))
+								.catch(console.error);
+						});
 					})
 					.catch(console.error)
-					*/
 				})
 				.catch((e) => {
 					console.warn(e);
