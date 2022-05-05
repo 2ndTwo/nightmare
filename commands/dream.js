@@ -36,12 +36,11 @@ module.exports = {
 							autoArchiveDuration: 1440,	// 1 day
 							reason: 'Showing progress dreaming up a nightmare'
 						}).then(threadChannel => {
-							const layers = 5;
+							const layers = 10;
 							const nightmareProcess = spawn('./darknet/darknet', ['nightmare', 'darknet/cfg/jnet-conv.cfg', 'darknet/jnet-conv.weights', `dream/inspiration.${imageExtension}`, layers.toString()]);
 
 							nightmareProcess.stdout.on('data', data => {
 								const dataStr = data.toString().trim();
-								console.log(`stdout: ${dataStr}`);
 								if (dataStr) {
 									threadChannel.send(dataStr)
 										.then(message => console.log(`Sent message: ${message.content}`))
@@ -51,7 +50,6 @@ module.exports = {
 
 							nightmareProcess.stderr.on('data', data => {
 								const dataStr = data.toString().trim();
-								console.log(`stderr: ${dataStr}`);
 								if (dataStr) {
 									threadChannel.send(dataStr)
 										.then(message => console.log(`Sent error message: ${message.content}`))
