@@ -36,18 +36,20 @@ module.exports = {
 							const nightmareProcess = spawn('./darknet/darknet', ['nightmare', 'darknet/cfg/vgg-conv.cfg', 'darknet/vgg-conv.weights', `dream/inspiration.${imageExtension}`, '10']);
 
 							nightmareProcess.stdout.on('data', data => {
-								console.log(`stdout: ${data.trim()}`);
-								if (data.trim()) {
-									threadChannel.send(data.trim())
+								const dataStr = data.toString().trim();
+								console.log(`stdout: ${dataStr}`);
+								if (dataStr) {
+									threadChannel.send(dataStr)
 										.then(message => console.log(`Sent message: ${message.content}`))
 										.catch(console.error);
 								}
 							});
 
 							nightmareProcess.stderr.on('data', data => {
-								console.log(`stderr: ${data.trim()}`);
-								if (data.trim()) {
-									threadChannel.send(data.trim())
+								const dataStr = data.toString().trim();
+								console.log(`stderr: ${dataStr}`);
+								if (dataStr) {
+									threadChannel.send(dataStr)
 										.then(message => console.log(`Sent error message: ${message.content}`))
 										.catch(console.error);
 								}
