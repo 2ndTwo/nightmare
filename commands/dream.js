@@ -127,7 +127,7 @@ function generateNightmare(discord, state) {
 
               // Create the generated image as an attachment
               // TODO: Add error checking, if file was not generated correctly
-              const nightmarePath = `./inspiration_jnet-conv_${layers}_000001.${imageExtension}`;
+              const nightmarePath = `./inspiration_jnet-conv_${layers}_000000.${imageExtension}`;
               const dimensions = sizeOf(nightmarePath);
               const canvas = Canvas.createCanvas(
                 dimensions.width,
