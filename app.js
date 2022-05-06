@@ -2,6 +2,23 @@ const fs = require("node:fs");
 const Discord = require("discord.js");
 const { discordBotToken } = require("./config.json");
 
+/* Set up base state variable */
+
+let state = {
+	queue: [
+		/* Example entry
+			{
+				inProgress: true,						// Whether this entry is currently being run
+				channelId: 1234567890,			// The channel the bot was summoned in
+				userId: 1234567890,				// Discord user ID
+				threadId: 1234567890,				// Thread ID
+				imageUrl: 'https://example.com/image.jpg',	// Inspiration image URL
+				options: {}									// Custom darknet options
+			}
+		*/
+	]
+}
+
 /* Set up Discord bot */
 
 const client = new Discord.Client({
@@ -34,7 +51,7 @@ client.on('interactionCreate', async interaction => {
 	if (!command) return;
 
 	try {
-		await command.execute(interaction);
+		await command.execute(client, state, interaction);
 	} catch (error) {
 		console.error(error);
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
