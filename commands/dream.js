@@ -30,8 +30,6 @@ module.exports = {
 
           const imageUrl = attachments[0].url;
 
-          console.log(state);
-
           state.queue.push({
             inProgress: false,
             imageMessageId: firstMessage.id,
@@ -40,7 +38,6 @@ module.exports = {
             imageUrl: imageUrl,
             options: {},
           });
-          console.log(state);
           if (state.queue.length === 1) {
             generateNightmare(discord, state);
           }
@@ -65,112 +62,106 @@ function generateNightmare(discord, state) {
       .fetch(currentNightmare.imageMessageId)
       .then((imageMessage) => {
         discord.users.fetch(currentNightmare.userId).then((user) => {
-					let userName;
-					imageMessage.members.fetch(user.id).then( (guildUser) => {
-						userName = guildUser.displayName;
-					})
-					.error(() => {
-						userName = 'UNKNOWN';
-					});
-
-          console.log("creating thread");
-          imageMessage
-            .startThread({
-              name: `${userName}'s nightmare`,
-              autoArchiveDuration: 1440, // 1 day
-              reason: "Showing progress dreaming up a nightmare",
-            })
-            .then((threadChannel) => {
-              const imageExtension = imageUrl.replace(
-                /.*\.([^.]{3,4})$/g,
-                "$1"
-              );
-              const imageDownload = spawn("wget", [
-                "-O",
-                `./dream/inspiration.${imageExtension}`,
-                imageUrl,
-              ]);
-              imageDownload.on("close", (code) => {
-                const layers = 10;
-                const nightmareProcess = spawn("./darknet/darknet", [
-                  "nightmare",
-                  "darknet/cfg/jnet-conv.cfg",
-                  "darknet/jnet-conv.weights",
-                  `dream/inspiration.${imageExtension}`,
-                  layers.toString(),
+          imageMessage.guild.members.fetch(user.id).then((guildUser) => {
+            const userName = guildUser.displayName;
+            imageMessage
+              .startThread({
+                name: `${userName}'s nightmare`,
+                autoArchiveDuration: 1440, // 1 day
+                reason: "Showing progress dreaming up a nightmare",
+              })
+              .then((threadChannel) => {
+                const imageExtension = imageUrl.replace(
+                  /.*\.([^.]{3,4})$/g,
+                  "$1"
+                );
+                const imageDownload = spawn("wget", [
+                  "-O",
+                  `./dream/inspiration.${imageExtension}`,
+                  imageUrl,
                 ]);
+                imageDownload.on("close", (code) => {
+                  const layers = 10;
+                  const nightmareProcess = spawn("./darknet/darknet", [
+                    "nightmare",
+                    "darknet/cfg/jnet-conv.cfg",
+                    "darknet/jnet-conv.weights",
+                    `dream/inspiration.${imageExtension}`,
+                    layers.toString(),
+                  ]);
 
-                nightmareProcess.stdout.on("data", (data) => {
-                  const dataStr = data.toString().trim();
-                  if (dataStr) {
+                  nightmareProcess.stdout.on("data", (data) => {
+                    const dataStr = data.toString().trim();
+                    if (dataStr) {
+                      threadChannel
+                        .send(dataStr)
+                        .then((message) =>
+                          console.log(`Sent message: ${message.content}`)
+                        )
+                        .catch(console.error);
+                    }
+                  });
+
+                  nightmareProcess.stderr.on("data", (data) => {
+                    const dataStr = data.toString().trim();
+                    if (dataStr) {
+                      threadChannel
+                        .send(dataStr)
+                        .then((message) =>
+                          console.log(`Sent error message: ${message.content}`)
+                        )
+                        .catch(console.error);
+                    }
+                  });
+
+                  nightmareProcess.on("error", (error) => {
+                    console.error(`error: ${error.message}`);
+                  });
+
+                  nightmareProcess.on("close", async (code) => {
                     threadChannel
-                      .send(dataStr)
+                      .send("Good morning")
                       .then((message) =>
                         console.log(`Sent message: ${message.content}`)
                       )
                       .catch(console.error);
-                  }
-                });
 
-                nightmareProcess.stderr.on("data", (data) => {
-                  const dataStr = data.toString().trim();
-                  if (dataStr) {
-                    threadChannel
-                      .send(dataStr)
-                      .then((message) =>
-                        console.log(`Sent error message: ${message.content}`)
-                      )
-                      .catch(console.error);
-                  }
-                });
+                    // Create the generated image as an attachment
+                    // TODO: Add error checking, if file was not generated correctly
+                    const nightmarePath = `./inspiration_jnet-conv_${layers}_000000.jpg`;
+                    const dimensions = sizeOf(nightmarePath);
+                    const canvas = Canvas.createCanvas(
+                      dimensions.width,
+                      dimensions.height
+                    );
+                    const context = canvas.getContext("2d");
+                    const nightmare = await Canvas.loadImage(nightmarePath);
+                    context.drawImage(
+                      nightmare,
+                      0,
+                      0,
+                      canvas.width,
+                      canvas.height
+                    );
 
-                nightmareProcess.on("error", (error) => {
-                  console.error(`error: ${error.message}`);
-                });
+                    const attachment = new MessageAttachment(
+                      canvas.toBuffer(),
+                      `nightmare.${imageExtension}`
+                    );
+                    threadChannel.send({
+                      content: `<@${user.id}>`,
+                      files: [attachment],
+                    });
 
-                nightmareProcess.on("close", async (code) => {
-                  threadChannel
-                    .send("Good morning")
-                    .then((message) =>
-                      console.log(`Sent message: ${message.content}`)
-                    )
-                    .catch(console.error);
-
-                  // Create the generated image as an attachment
-                  // TODO: Add error checking, if file was not generated correctly
-                  const nightmarePath = `./inspiration_jnet-conv_${layers}_000000.jpg`;
-                  const dimensions = sizeOf(nightmarePath);
-                  const canvas = Canvas.createCanvas(
-                    dimensions.width,
-                    dimensions.height
-                  );
-                  const context = canvas.getContext("2d");
-                  const nightmare = await Canvas.loadImage(nightmarePath);
-                  context.drawImage(
-                    nightmare,
-                    0,
-                    0,
-                    canvas.width,
-                    canvas.height
-                  );
-
-                  const attachment = new MessageAttachment(
-                    canvas.toBuffer(),
-                    `nightmare.${imageExtension}`
-                  );
-                  threadChannel.send({
-                    content: `<@${user.id}>`,
-                    files: [attachment],
+                    state.queue.shift();
+                    if (state.queue.length >= 0) {
+                      generateNightmare(discord, state);
+                    }
                   });
-
-                  state.queue.shift();
-                  if (state.queue.length >= 0) {
-                    generateNightmare(discord, state);
-                  }
                 });
-              });
-            })
-            .catch(console.error);
+              })
+              .catch(console.error);
+          });
         });
       });
   });
