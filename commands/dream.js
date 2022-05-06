@@ -65,8 +65,13 @@ function generateNightmare(discord, state) {
       .fetch(currentNightmare.imageMessageId)
       .then((imageMessage) => {
         discord.users.fetch(currentNightmare.userId).then((user) => {
-          console.log(user);
-          const userName = user.displayName;
+					let userName;
+					imageMessage.members.fetch(user.id).then( (guildUser) => {
+						userName = guildUser.displayName;
+					})
+					.error(() => {
+						userName = 'UNKNOWN';
+					});
 
           console.log("creating thread");
           imageMessage
