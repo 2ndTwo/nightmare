@@ -97,6 +97,8 @@ function generateNightmare(discord, state) {
                         "darknet/jnet-conv.weights",
                         `${resizedInspirationPath}`,
                         layers.toString(),
+                        "-iters",
+                        "7",
                       ]);
 
                       nightmareProcess.stdout.on("data", (data) => {
@@ -134,12 +136,6 @@ function generateNightmare(discord, state) {
                       });
 
                       nightmareProcess.on("close", async (code) => {
-                        threadChannel
-                          .send("Good morning")
-                          .then((message) =>
-                            console.log(`Sent message: ${message.content}`)
-                          )
-                          .catch(console.error);
 
                         // Create the generated image as an attachment
                         // TODO: Add error checking, if file was not generated correctly
@@ -166,6 +162,13 @@ function generateNightmare(discord, state) {
                         threadChannel.send({
                           content: `<@${user.id}>`,
                           files: [attachment],
+                        }).then(() => {
+                          threadChannel
+                            .send("Good morning")
+                            .then((message) =>
+                              console.log(`Sent message: ${message.content}`)
+                            )
+                            .catch(console.error);
                         });
 
                         state.queue.shift();
