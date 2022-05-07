@@ -85,6 +85,7 @@ function generateNightmare(discord, state) {
                 inspirationDownload.on("close", async (code) => {
                   // Resize image if it's too large for darknet
                   const resizedInspirationPath = `./dream/inspiration.${imageExtension}`;
+                  sharp.cache(false);
                   sharp(inspirationPath)
                     .resize(1024, 1024, {
                       fit: "inside",
