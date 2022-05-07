@@ -105,6 +105,13 @@ function generateNightmare(discord, state) {
                         "0.057"
                       ]);
 
+                      threadChannel
+                        .send('Good night')
+                        .then((message) =>
+                          console.log(`Sent message: ${message.content}`)
+                        )
+                        .catch(console.error);
+
                       nightmareProcess.stdout.on("data", (data) => {
                         const dataStr = data.toString().trim();
                         if (dataStr) {
@@ -118,17 +125,7 @@ function generateNightmare(discord, state) {
                       });
 
                       nightmareProcess.stderr.on("data", (data) => {
-                        const dataStr = data.toString().trim();
-                        if (dataStr) {
-                          threadChannel
-                            .send(dataStr)
-                            .then((message) =>
-                              console.log(
-                                `Sent error message: ${message.content}`
-                              )
-                            )
-                            .catch(console.error);
-                        }
+                          console.warn(data);
                       });
 
                       nightmareProcess.on("error", (error) => {
