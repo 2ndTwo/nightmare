@@ -4,6 +4,7 @@ const Canvas = require("canvas");
 const sizeOf = require("image-size");
 const { MessageAttachment } = require("discord.js");
 const sharp = require("sharp");
+const fs = require("fs");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -170,6 +171,10 @@ function generateNightmare(discord, state) {
                             )
                             .catch(console.error);
                         });
+
+                        fs.unlinkSync(inspirationPath);
+                        fs.unlinkSync(resizedInspirationPath);
+                        fs.unlinkSync(nightmarePath);
 
                         state.queue.shift();
                         if (state.queue.length > 0) {
