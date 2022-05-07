@@ -101,6 +101,8 @@ function generateNightmare(discord, state) {
                         layers.toString(),
                         "-iters",
                         "7",
+                        "-rate",
+                        "0.057"
                       ]);
 
                       nightmareProcess.stdout.on("data", (data) => {
