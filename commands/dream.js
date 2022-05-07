@@ -169,7 +169,7 @@ function generateNightmare(discord, state) {
                         });
 
                         state.queue.shift();
-                        if (state.queue.length >= 0) {
+                        if (state.queue.length > 0) {
                           generateNightmare(discord, state);
                         }
                       });
