@@ -32,7 +32,6 @@ module.exports = {
           const imageUrl = attachments[0].url;
 
           state.queue.push({
-            inProgress: false,
             imageMessageId: firstMessage.id,
             channelId: interaction.channel.id,
             userId: interaction.member.id,
@@ -53,9 +52,9 @@ module.exports = {
 
 function generateNightmare(discord, state) {
   console.log("generating nightmare");
+  console.log(state);
   const queue = state.queue;
   const currentNightmare = queue[0];
-  currentNightmare.inProgress = true;
   const imageUrl = currentNightmare.imageUrl;
   const options = currentNightmare.options;
   discord.channels.fetch(currentNightmare.channelId).then((channel) => {
@@ -85,7 +84,6 @@ function generateNightmare(discord, state) {
                 inspirationDownload.on("close", async (code) => {
                   // Resize image if it's too large for darknet
                   const resizedInspirationPath = `./dream/inspiration.${imageExtension}`;
-                  console.log('resizing image');
                   sharp(inspirationPath)
                     .resize(1024, 1024, {
                       fit: "inside",
@@ -93,7 +91,6 @@ function generateNightmare(discord, state) {
                     .toFile(resizedInspirationPath)
                     .then(() => {
                       const layers = 10;
-                      console.log('starting nightmare process');
                       const nightmareProcess = spawn("./darknet/darknet", [
                         "nightmare",
                         "darknet/cfg/jnet-conv.cfg",
@@ -101,7 +98,6 @@ function generateNightmare(discord, state) {
                         `${resizedInspirationPath}`,
                         layers.toString(),
                       ]);
-                      console.log('started nightmare process');
 
                       nightmareProcess.stdout.on("data", (data) => {
                         const dataStr = data.toString().trim();
@@ -178,9 +174,8 @@ function generateNightmare(discord, state) {
                         }
                       });
                     })
-                    .catch( (e) =>
-                      // Image resizing
-                      console.log('testing')
+                    .catch(
+                      console.error
                     );
                 });
               })

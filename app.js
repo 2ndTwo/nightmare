@@ -8,7 +8,6 @@ let state = {
 	queue: [
 		/* Example entry
 			{
-				inProgress: true,						// Whether this entry is currently being run
 				channelId: 1234567890,			// The channel the bot was summoned in
 				userId: 1234567890,				// Discord user ID
 				threadId: 1234567890,				// Thread ID
