@@ -11,7 +11,7 @@ module.exports = {
     .setName("dream")
     .setDescription("Dreams about your image"),
   async execute(discord, state, interaction) {
-    return interaction.reply("What shall I dream of?").then(() => {
+    return interaction.reply("What should I dream of?").then(() => {
       const filter = (m) => interaction.user.id === m.author.id;
 
       interaction.channel
@@ -107,7 +107,7 @@ function generateNightmare(discord, state) {
                       ]);
 
                       threadChannel
-                        .send('Good night')
+                        .send('I will dream of this now. Good night.')
                         .then((message) =>
                           console.log(`Sent message: ${message.content}`)
                         )
@@ -166,7 +166,7 @@ function generateNightmare(discord, state) {
                           files: [attachment],
                         }).then(() => {
                           threadChannel
-                            .send("Good morning")
+                            .send("Good morning.")
                             .then((message) =>
                               console.log(`Sent message: ${message.content}`)
                             )
