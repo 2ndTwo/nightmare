@@ -89,7 +89,6 @@ function generateNightmare(discord, state) {
                   sharp(inspirationPath)
                     .resize(1024, 1024, {
                       fit: "inside",
-                      withoutEnlargement: true
                     })
                     .toFile(resizedInspirationPath)
                     .then(() => {
